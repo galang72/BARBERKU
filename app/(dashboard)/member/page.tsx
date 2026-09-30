@@ -221,9 +221,9 @@ export default function MemberPage() {
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         {isExpired ? (
-                          <Badge variant="rose">Expired</Badge>
+                          <Badge variant="red">Expired</Badge>
                         ) : (
-                          <Badge variant="emerald">Aktif</Badge>
+                          <Badge variant="green">Aktif</Badge>
                         )}
                       </td>
                       <td className="py-3.5 px-4 text-center">
