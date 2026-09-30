@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getBarbermen, createBarberman, updateBarberman, deleteBarberman } from "@/lib/db";
+import { getBarbermen, createBarberman, deleteBarberman, memoryDB, saveLocalDB, initMemoryDBIfNeeded } from "@/lib/db";
 import { withCache, invalidateCache, TTL } from "@/lib/cache";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Nama barberman wajib diisi" }, { status: 400 });
     }
     const created = await createBarberman(body);
-    // Invalidate cache agar data terbaru tampil
     invalidateCache("barbermen:");
     return NextResponse.json(created);
   } catch (err: any) {
@@ -38,13 +38,44 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
-    if (!body.id) {
+    const { id, ...rawData } = body;
+    if (!id) {
       return NextResponse.json({ error: "ID barberman wajib diisi" }, { status: 400 });
     }
-    const updated = await updateBarberman(body.id, body);
-    // Invalidate cache agar toggle aktif/nonaktif langsung terlihat
+
+    // Hanya kirim field yang valid ke Prisma (hindari error kolom tidak ada)
+    const prismaData: Record<string, any> = {};
+    if (rawData.name !== undefined)      prismaData.name = rawData.name;
+    if (rawData.nickname !== undefined)  prismaData.nickname = rawData.nickname;
+    if (rawData.phone !== undefined)     prismaData.phone = rawData.phone;
+    if (rawData.isActive !== undefined)  prismaData.isActive = rawData.isActive;
+    if (rawData.branch !== undefined)    prismaData.branch = rawData.branch;
+    if (rawData.photoUrl !== undefined)  prismaData.photoUrl = rawData.photoUrl;
+
+    let updated: any = null;
+
+    // Coba update ke Prisma/Supabase terlebih dahulu
+    try {
+      updated = await prisma.barberman.update({
+        where: { id },
+        data: prismaData,
+      });
+    } catch (prismaErr: any) {
+      // Jika Prisma gagal (misal: kolom branch belum ada di DB), fallback ke memoryDB
+      console.warn("⚠️ Prisma update barberman gagal, fallback ke memoryDB:", prismaErr?.message);
+    }
+
+    // Selalu update memoryDB juga (sebagai ground truth untuk in-memory state)
+    await initMemoryDBIfNeeded();
+    const idx = memoryDB.barbermen.findIndex((b: any) => b.id === id);
+    if (idx !== -1) {
+      memoryDB.barbermen[idx] = { ...memoryDB.barbermen[idx], ...rawData };
+      saveLocalDB();
+      if (!updated) updated = memoryDB.barbermen[idx];
+    }
+
     invalidateCache("barbermen:");
-    return NextResponse.json(updated);
+    return NextResponse.json(updated || { id, ...rawData, success: true });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
@@ -56,7 +87,6 @@ export async function DELETE(req: NextRequest) {
     const id = searchParams.get("id");
     if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
     await deleteBarberman(id);
-    // Invalidate cache setelah hapus
     invalidateCache("barbermen:");
     return NextResponse.json({ success: true });
   } catch (err: any) {

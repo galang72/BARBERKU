@@ -114,9 +114,21 @@ export default function BarbermanPage() {
     }
   };
 
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+
   const handleToggleActive = async (b: any) => {
+    if (togglingId) return; // hindari double-click
+    setTogglingId(b.id);
+
+    // Optimistic update: langsung ubah di state lokal
+    setBarbermen((prev) =>
+      prev.map((item) =>
+        item.id === b.id ? { ...item, isActive: !item.isActive } : item
+      )
+    );
+
     try {
-      await fetch("/api/barbermen", {
+      const res = await fetch("/api/barbermen", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -124,9 +136,27 @@ export default function BarbermanPage() {
           isActive: !b.isActive,
         }),
       });
-      fetchBarbermen();
+
+      if (!res.ok) {
+        // Rollback jika gagal
+        setBarbermen((prev) =>
+          prev.map((item) =>
+            item.id === b.id ? { ...item, isActive: b.isActive } : item
+          )
+        );
+        const err = await res.json();
+        alert("Gagal mengubah status: " + (err.error || "Server error"));
+      }
     } catch (e) {
+      // Rollback jika network error
+      setBarbermen((prev) =>
+        prev.map((item) =>
+          item.id === b.id ? { ...item, isActive: b.isActive } : item
+        )
+      );
       console.error(e);
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -237,10 +267,23 @@ export default function BarbermanPage() {
                     </button>
                     <button
                       onClick={() => handleToggleActive(b)}
-                      className="p-1.5 rounded-lg text-slate-500 hover:text-blue-700 hover:bg-blue-50 transition"
+                      disabled={togglingId === b.id}
+                      className={`p-1.5 rounded-lg transition ${
+                        togglingId === b.id
+                          ? "opacity-50 cursor-not-allowed"
+                          : b.isActive
+                          ? "text-rose-400 hover:text-rose-600 hover:bg-rose-50"
+                          : "text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50"
+                      }`}
                       title={b.isActive ? "Nonaktifkan" : "Aktifkan"}
                     >
-                      {b.isActive ? <XCircle className="w-4 h-4 text-rose-500" /> : <CheckCircle className="w-4 h-4 text-emerald-600" />}
+                      {togglingId === b.id ? (
+                        <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin inline-block" />
+                      ) : b.isActive ? (
+                        <XCircle className="w-4 h-4" />
+                      ) : (
+                        <CheckCircle className="w-4 h-4" />
+                      )}
                     </button>
                     <button
                       onClick={() => handleDelete(b.id, b.name)}
