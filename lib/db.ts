@@ -999,6 +999,8 @@ export async function updateShopSettings(data: any) {
 
 // BARBERMAN
 export async function getBarbermen(includeInactive = false, branch?: string) {
+  // Jika branch diisi (Telkom/Suta), filter barberman per cabang
+  // Jika branch kosong/All, tampilkan semua (untuk Owner)
   return safeDb(
     async () => {
       const where: any = {};
@@ -1010,8 +1012,12 @@ export async function getBarbermen(includeInactive = false, branch?: string) {
       });
     },
     () => {
-      let list = includeInactive ? memoryDB.barbermen : memoryDB.barbermen.filter((b) => b.isActive);
-      if (branch && branch !== "All") list = list.filter((b) => b.branch === branch);
+      let list: any[] = includeInactive
+        ? [...memoryDB.barbermen]
+        : memoryDB.barbermen.filter((b: any) => b.isActive !== false);
+      if (branch && branch !== "All") {
+        list = list.filter((b: any) => b.branch === branch);
+      }
       return list;
     }
   );

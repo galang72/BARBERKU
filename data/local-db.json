@@ -31,12 +31,36 @@
   ],
   "barbermen": [
     {
-      "id": "brb_arie",
-      "name": "Arie",
-      "nickname": "Bang Arie",
-      "phone": "081211112222",
+      "id": "brb_ade",
+      "name": "Ade",
+      "nickname": "Bang Ade",
+      "phone": "081200001111",
       "isActive": true,
       "branch": "Telkom"
+    },
+    {
+      "id": "brb_arif",
+      "name": "Arif",
+      "nickname": "Bang Arif",
+      "phone": "081200002222",
+      "isActive": true,
+      "branch": "Telkom"
+    },
+    {
+      "id": "brb_akmal",
+      "name": "Akmal",
+      "nickname": "Bang Akmal",
+      "phone": "081200003333",
+      "isActive": true,
+      "branch": "Suta"
+    },
+    {
+      "id": "brb_ari",
+      "name": "Ari",
+      "nickname": "Bang Ari",
+      "phone": "081200004444",
+      "isActive": true,
+      "branch": "Suta"
     },
     {
       "id": "brb_azis",
