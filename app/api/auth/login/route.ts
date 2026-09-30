@@ -19,12 +19,19 @@ export async function POST(req: NextRequest) {
     const user = await findAdminUser(cleanUser);
 
     if (!user) {
-      return NextResponse.json({ error: "Akun admin tidak ditemukan" }, { status: 401 });
+      return NextResponse.json({ error: "Username atau password salah" }, { status: 401 });
     }
 
+    // Hanya izinkan username yang terdaftar resmi
+    const allowedUsernames = ["owner", "admin_telkom", "admin_suta"];
+    if (!allowedUsernames.includes(user.username.toLowerCase())) {
+      return NextResponse.json({ error: "Akun ini tidak memiliki akses ke sistem" }, { status: 403 });
+    }
+
+    // Verifikasi password dengan bcrypt — tidak ada bypass
     const isValid = await bcrypt.compare(cleanPass, user.passwordHash).catch(() => false);
-    if (!isValid && cleanPass !== "admin123" && cleanPass !== user.passwordHash) {
-      return NextResponse.json({ error: "Password salah. Masukkan password default: admin123" }, { status: 401 });
+    if (!isValid) {
+      return NextResponse.json({ error: "Username atau password salah" }, { status: 401 });
     }
 
     const userAny = user as any;

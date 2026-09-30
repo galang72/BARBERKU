@@ -149,15 +149,8 @@ export function ensureRolesAndTransfers(db: InMemoryDB) {
     }
   }
 
-  const admin01 = db.users.find((u) => u.id === "usr_admin01" || u.username === "admin");
-  if (admin01) {
-    if (!admin01.role || admin01.role === "ADMIN") {
-      admin01.role = "OWNER";
-    }
-    if (!admin01.branch) {
-      admin01.branch = "All";
-    }
-  }
+  // Hapus user 'admin' lama jika masih ada (tidak boleh login lagi)
+  db.users = db.users.filter((u: any) => u.username?.toLowerCase() !== "admin");
 }
 
 export function saveLocalDB() {

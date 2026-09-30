@@ -2,15 +2,6 @@
   "initialized": true,
   "users": [
     {
-      "id": "usr_admin01",
-      "username": "admin",
-      "email": "admin@adbarbershop.com",
-      "passwordHash": "$2a$10$B7.IaH54O6JYYr0tAIvZ0ujLqC.1hhYdwHZe5fFd.WAZzvgdbSLIS",
-      "name": "Owner AD Barbershop",
-      "role": "OWNER",
-      "branch": "All"
-    },
-    {
       "id": "usr_owner",
       "username": "owner",
       "email": "owner@adbarbershop.com",
