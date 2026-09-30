@@ -998,27 +998,20 @@ export async function updateShopSettings(data: any) {
 }
 
 // BARBERMAN
-export async function getBarbermen(includeInactive = false, branch?: string) {
-  // Jika branch diisi (Telkom/Suta), filter barberman per cabang
-  // Jika branch kosong/All, tampilkan semua (untuk Owner)
+export async function getBarbermen(includeInactive = false, _branch?: string) {
+  // Semua 6 barberman selalu tampil di semua cabang
+  // field `branch` menandai di mana mereka sedang bertugas (bukan filter)
   return safeDb(
     async () => {
-      const where: any = {};
-      if (!includeInactive) where.isActive = true;
-      if (branch && branch !== "All") where.branch = branch;
       return await prisma.barberman.findMany({
-        where: Object.keys(where).length ? where : undefined,
+        where: includeInactive ? undefined : { isActive: true },
         orderBy: { name: "asc" },
       });
     },
     () => {
-      let list: any[] = includeInactive
+      return includeInactive
         ? [...memoryDB.barbermen]
         : memoryDB.barbermen.filter((b: any) => b.isActive !== false);
-      if (branch && branch !== "All") {
-        list = list.filter((b: any) => b.branch === branch);
-      }
-      return list;
     }
   );
 }

@@ -84,21 +84,34 @@ export default function KasirPage() {
   // Fetch initial master data
   const loadMasterData = async () => {
     try {
-      const [resB, resS, resP, resSettings] = await Promise.all([
-        fetch("/api/barbermen"),
+      const [resB, resS, resP, resSettings, resSess] = await Promise.all([
+        fetch("/api/barbermen?all=true"),
         fetch("/api/services"),
         fetch("/api/products?includeCategories=true"),
         fetch("/api/settings"),
+        fetch("/api/auth/me"),
       ]);
 
       const dataB = await resB.json();
       const dataS = await resS.json();
       const dataP = await resP.json();
       const dataSet = await resSettings.json();
+      const dataSess = await resSess.json();
 
-      setBarbermen(dataB);
-      if (dataB.length > 0 && !selectedBarbermanId) {
-        setSelectedBarbermanId(dataB[0].id);
+      // Filter: hanya barberman yang isActive=true DAN branch = cabang admin yang login
+      const myBranch = dataSess?.branch;
+      const filteredBarbermen = Array.isArray(dataB)
+        ? dataB.filter((b: any) => {
+            if (!b.isActive) return false;
+            // Jika admin punya cabang spesifik, filter sesuai
+            if (myBranch && myBranch !== "All") return b.branch === myBranch;
+            return true; // Owner: lihat semua aktif
+          })
+        : [];
+
+      setBarbermen(filteredBarbermen);
+      if (filteredBarbermen.length > 0 && !selectedBarbermanId) {
+        setSelectedBarbermanId(filteredBarbermen[0].id);
       }
 
       setServices(dataS);
