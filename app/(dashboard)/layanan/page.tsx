@@ -180,7 +180,7 @@ export default function LayananPage() {
                       {formatRupiah(s.price)}
                     </td>
                     <td className="py-3.5 px-4 text-center">
-                      <Badge variant={s.isActive ? "emerald" : "rose"}>
+                      <Badge variant={s.isActive ? "green" : "red"}>
                         {s.isActive ? "Aktif" : "Nonaktif"}
                       </Badge>
                     </td>
