@@ -28,11 +28,11 @@ export function setCached<T>(key: string, data: T, ttlSeconds: number = 30): voi
 }
 
 export function invalidateCache(prefix: string): void {
-  for (const key of cache.keys()) {
+  Array.from(cache.keys()).forEach((key) => {
     if (key.startsWith(prefix)) {
       cache.delete(key);
     }
-  }
+  });
 }
 
 export function invalidateAll(): void {
