@@ -85,6 +85,7 @@ model Barberman {
   phone        String?
   photoUrl     String?       @map("photo_url")
   isActive     Boolean       @default(true) @map("is_active")
+  branch       String        @default("Telkom")
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
   bookings     Booking[]

@@ -39,6 +39,7 @@ export default function BookingPage() {
   const [bookingTime, setBookingTime] = useState("10:00");
   const [bookingDate, setBookingDate] = useState(new Date().toISOString().split("T")[0]);
   const [notes, setNotes] = useState("");
+  const [dpPaid, setDpPaid] = useState(20000); // DP default Rp 20.000
   const [submitting, setSubmitting] = useState(false);
 
   const fetchBookings = async () => {
@@ -97,6 +98,10 @@ export default function BookingPage() {
       alert("Harap lengkapi nama customer, barberman, dan layanan");
       return;
     }
+    if (dpPaid < 20000) {
+      alert("DP minimal Rp 20.000 wajib dibayar untuk konfirmasi booking!");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -111,15 +116,22 @@ export default function BookingPage() {
           bookingDate,
           bookingTime,
           notes,
+          dpPaid,
         }),
       });
 
-      if (!res.ok) throw new Error("Gagal membuat booking");
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Gagal membuat booking");
+        return;
+      }
 
+      alert(data.message || "✅ Booking berhasil dibuat!");
       setModalOpen(false);
       setCustName("");
       setCustPhone("");
       setNotes("");
+      setDpPaid(20000);
       fetchBookings();
     } catch (err: any) {
       alert(err.message);
@@ -276,7 +288,18 @@ export default function BookingPage() {
                       {b.notes || "-"}
                     </td>
                     <td className="py-3.5 px-4 text-center">
-                      {getStatusBadge(b.status)}
+                      <div className="flex flex-col items-center gap-1">
+                        {getStatusBadge(b.status)}
+                        {b.dpPaid > 0 && (
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            b.status === "NO_SHOW"
+                              ? "bg-rose-100 text-rose-600"
+                              : "bg-emerald-100 text-emerald-700"
+                          }`}>
+                            {b.status === "NO_SHOW" ? "🔥 DP Hangus" : `✅ DP Rp ${(b.dpPaid).toLocaleString("id-ID")}`}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-3.5 px-4 text-center">
                       <div className="flex items-center justify-center gap-1.5">
@@ -410,6 +433,39 @@ export default function BookingPage() {
                 onChange={(e) => setBookingTime(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-blue-600"
               />
+            </div>
+          </div>
+
+          {/* DP SECTION */}
+          <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200">
+            <div className="flex items-start gap-2 mb-2">
+              <span className="text-amber-600 text-lg">⚠️</span>
+              <div>
+                <p className="text-xs font-bold text-amber-800">Kebijakan Down Payment (DP)</p>
+                <p className="text-[11px] text-amber-700 mt-0.5">
+                  DP <strong>Rp 20.000</strong> wajib dibayar. Jika customer <strong>tidak hadir</strong> pada hari H, DP otomatis <strong>hangus</strong>.
+                </p>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-amber-800 mb-1">
+                Jumlah DP Diterima <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-2.5 text-xs text-slate-500 font-semibold">Rp</span>
+                <input
+                  type="number"
+                  min={20000}
+                  step={1000}
+                  required
+                  value={dpPaid}
+                  onChange={(e) => setDpPaid(Number(e.target.value))}
+                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-white border border-amber-300 text-xs text-slate-900 font-bold focus:outline-none focus:border-amber-500"
+                />
+              </div>
+              {dpPaid < 20000 && (
+                <p className="text-[11px] text-rose-600 mt-1 font-semibold">⚠ DP minimal Rp 20.000</p>
+              )}
             </div>
           </div>
 

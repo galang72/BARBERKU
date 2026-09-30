@@ -8,6 +8,7 @@ import {
   RotateCw,
   FileSpreadsheet,
   Users,
+  Trash2,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -99,6 +100,21 @@ export default function MemberPage() {
       if (res.ok) {
         setExtendModalOpen(false);
         fetchMembers();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleDeleteMember = async (id: string, name: string) => {
+    if (!confirm(`Yakin ingin menghapus member "${name}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+    try {
+      const res = await fetch(`/api/members?id=${id}`, { method: "DELETE" });
+      if (res.ok) {
+        fetchMembers();
+      } else {
+        const err = await res.json();
+        alert(err.error || "Gagal menghapus member");
       }
     } catch (e) {
       console.error(e);
@@ -227,18 +243,27 @@ export default function MemberPage() {
                         )}
                       </td>
                       <td className="py-3.5 px-4 text-center">
-                        <Button
-                          onClick={() => {
-                            setSelectedMember(m);
-                            setExtendModalOpen(true);
-                          }}
-                          variant="outline"
-                          size="sm"
-                          className="text-xs border-blue-200 text-blue-700 hover:bg-blue-50"
-                        >
-                          <RotateCw className="w-3.5 h-3.5 mr-1 text-blue-600" />
-                          Perpanjang
-                        </Button>
+                        <div className="flex items-center justify-center gap-2">
+                          <Button
+                            onClick={() => {
+                              setSelectedMember(m);
+                              setExtendModalOpen(true);
+                            }}
+                            variant="outline"
+                            size="sm"
+                            className="text-xs border-blue-200 text-blue-700 hover:bg-blue-50"
+                          >
+                            <RotateCw className="w-3.5 h-3.5 mr-1 text-blue-600" />
+                            Perpanjang
+                          </Button>
+                          <button
+                            onClick={() => handleDeleteMember(m.id, m.name)}
+                            className="p-1.5 rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition"
+                            title="Hapus member"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

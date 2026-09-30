@@ -22,6 +22,7 @@ interface InMemoryDB {
   cashTransactions: any[];
   expenses: any[];
   transfers: any[];
+  branchReports: any[];
   shopSettings: any;
 }
 
@@ -50,6 +51,7 @@ if (!globalForDB.__ad_barbershop_memory_db) {
     cashTransactions: [],
     expenses: [],
     transfers: [],
+    branchReports: [],
     shopSettings: {
       id: "default",
       shopName: "AD BARBERSHOP",
@@ -105,6 +107,9 @@ export function syncFromLocalDB(): void {
 export function ensureRolesAndTransfers(db: InMemoryDB) {
   if (!db.transfers) {
     db.transfers = [];
+  }
+  if (!db.branchReports) {
+    db.branchReports = [];
   }
   const defaultPasswordHash = "$2a$10$B7.IaH54O6JYYr0tAIvZ0ujLqC.1hhYdwHZe5fFd.WAZzvgdbSLIS"; // admin123
   const requiredUsers = [
@@ -1000,17 +1005,21 @@ export async function updateShopSettings(data: any) {
 }
 
 // BARBERMAN
-export async function getBarbermen(includeInactive = false) {
+export async function getBarbermen(includeInactive = false, branch?: string) {
   return safeDb(
     async () => {
+      const where: any = {};
+      if (!includeInactive) where.isActive = true;
+      if (branch && branch !== "All") where.branch = branch;
       return await prisma.barberman.findMany({
-        where: includeInactive ? undefined : { isActive: true },
+        where: Object.keys(where).length ? where : undefined,
         orderBy: { name: "asc" },
       });
     },
     () => {
-      if (includeInactive) return memoryDB.barbermen;
-      return memoryDB.barbermen.filter((b) => b.isActive);
+      let list = includeInactive ? memoryDB.barbermen : memoryDB.barbermen.filter((b) => b.isActive);
+      if (branch && branch !== "All") list = list.filter((b) => b.branch === branch);
+      return list;
     }
   );
 }
@@ -1297,20 +1306,43 @@ export async function createProductTransfer(input: CreateTransferInput) {
   }
   memoryDB.transfers.unshift(transferRecord);
 
-  // Catat riwayat stock movement
-  const movement = {
-    id: `stk_trf_${Date.now()}`,
+  // ── PENGIRIM: stok berkurang ──
+  const stockBefore = product.stock;
+  product.stock = Math.max(0, product.stock - qty);
+  const movementOut = {
+    id: `stk_trf_out_${Date.now()}`,
     productId: product.id,
     type: "OUT" as const,
     quantity: qty,
-    previousStock: product.stock,
-    currentStock: Math.max(0, product.stock - qty),
-    reason: `Transfer Antar Cabang: ${input.fromBranch} -> ${input.toBranch} (${transferNumber})`,
+    previousStock: stockBefore,
+    currentStock: product.stock,
+    reason: `Transfer Keluar: ${input.fromBranch} → ${input.toBranch} (${transferNumber})`,
     notes: input.notes || "",
     createdAt: new Date(),
   };
-  product.stock = movement.currentStock;
-  memoryDB.stockMovements.push(movement);
+  memoryDB.stockMovements.push(movementOut);
+
+  // ── PENERIMA: cari produk yang sama di cabang tujuan ──
+  // Karena stok bersifat global per produk, kita tambahkan stok produk yang sama
+  // Jika ada sistem stok per cabang terpisah di masa depan, ini bisa dipecah
+  // Untuk sekarang: stok global bertambah (produk dikirim dari gudang/cabang lain)
+  const stockBeforeIn = product.stock;
+  product.stock = product.stock + qty; // stok kembali bertambah karena terima
+  const movementIn = {
+    id: `stk_trf_in_${Date.now() + 1}`,
+    productId: product.id,
+    type: "IN" as const,
+    quantity: qty,
+    previousStock: stockBeforeIn,
+    currentStock: product.stock,
+    reason: `Transfer Masuk: ${input.fromBranch} → ${input.toBranch} (${transferNumber}) — diterima Cabang ${input.toBranch}`,
+    notes: input.notes || "",
+    createdAt: new Date(),
+  };
+  memoryDB.stockMovements.push(movementIn);
+
+  // Update transferRecord dengan info stok terkini
+  transferRecord.stockAfterTransfer = product.stock;
 
   saveLocalDB();
   return transferRecord;
@@ -1515,6 +1547,22 @@ export async function extendMember(id: string, additionalDays: number) {
   );
 }
 
+export async function deleteMember(id: string) {
+  return safeDb(
+    async () => {
+      await prisma.member.delete({ where: { id } });
+      return { success: true };
+    },
+    () => {
+      const idx = memoryDB.members.findIndex((m) => m.id === id);
+      if (idx === -1) throw new Error("Member tidak ditemukan");
+      memoryDB.members.splice(idx, 1);
+      return { success: true };
+    },
+    true
+  );
+}
+
 // BOOKINGS
 export async function getBookings(dateStr?: string) {
   return safeDb(
@@ -1546,10 +1594,26 @@ export async function getBookings(dateStr?: string) {
 export async function createBooking(data: any) {
   return safeDb(
     async () => {
-      return await prisma.booking.create({ data });
+      // Untuk Prisma: hanya kirim field yang ada di schema
+      const { dpPaid, dpStatus, ...prismaData } = data;
+      const booking = await prisma.booking.create({
+        data: {
+          ...prismaData,
+          status: dpPaid >= 20000 ? "CONFIRMED" : "PENDING",
+        },
+      });
+      return { ...booking, dpPaid: dpPaid || 0, dpStatus: dpStatus || "UNPAID" };
     },
     () => {
-      const newB = { id: `bkg_${Date.now()}`, status: "PENDING", createdAt: new Date(), ...data };
+      const newB = {
+        id: `bkg_${Date.now()}`,
+        status: data.dpPaid >= 20000 ? "CONFIRMED" : "PENDING",
+        dpPaid: data.dpPaid || 0,
+        dpStatus: data.dpStatus || "UNPAID",
+        dpHangus: false,
+        createdAt: new Date(),
+        ...data,
+      };
       memoryDB.bookings.push(newB);
       return newB;
     },

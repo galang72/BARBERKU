@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import {
   Search,
@@ -47,6 +47,9 @@ export default function KasirPage() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchingCustomer, setSearchingCustomer] = useState(false);
 
+  // Ref untuk menutup dropdown saat klik di luar
+  const autocompleteRef = useRef<HTMLDivElement>(null);
+
   // Selected Customer (can be existing or new input)
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [newCustomerName, setNewCustomerName] = useState("");
@@ -66,6 +69,17 @@ export default function KasirPage() {
   const [submitting, setSubmitting] = useState(false);
   const [completedTx, setCompletedTx] = useState<any>(null);
   const [receiptOpen, setReceiptOpen] = useState(false);
+
+  // Tutup dropdown autocomplete saat klik di luar
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (autocompleteRef.current && !autocompleteRef.current.contains(e.target as Node)) {
+        setSearchResults([]);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Fetch initial master data
   const loadMasterData = async () => {
@@ -216,6 +230,8 @@ export default function KasirPage() {
     setNewCustomerName(cust.name);
     setNewCustomerPhone(cust.phone || "");
     setNewCustomerInstagram(cust.instagram || "");
+    setSearchResults([]);
+    setCustomerSearchQuery("");
     setCustomerModalOpen(false);
   };
 
@@ -573,7 +589,14 @@ export default function KasirPage() {
                     </div>
                   </div>
                   <button
-                    onClick={() => setSelectedCustomer(null)}
+                    onClick={() => {
+                      setSelectedCustomer(null);
+                      setNewCustomerName("");
+                      setNewCustomerPhone("");
+                      setNewCustomerInstagram("");
+                      setSearchResults([]);
+                      setCustomerSearchQuery("");
+                    }}
                     className="text-slate-400 hover:text-rose-600 p-1 text-base font-bold cursor-pointer"
                     title="Hapus / Ganti Customer"
                   >
@@ -582,13 +605,91 @@ export default function KasirPage() {
                 </div>
               ) : (
                 <div className="space-y-1.5">
-                  <input
-                    type="text"
-                    value={newCustomerName}
-                    onChange={(e) => setNewCustomerName(e.target.value)}
-                    placeholder="Nama Customer (Wajib) *"
-                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600"
-                  />
+                  {/* ── AUTOCOMPLETE CUSTOMER NAME ── */}
+                  <div className="relative" ref={autocompleteRef}>
+                    <input
+                      type="text"
+                      value={newCustomerName}
+                      onChange={(e) => {
+                        setNewCustomerName(e.target.value);
+                        setCustomerSearchQuery(e.target.value);
+                      }}
+                      onFocus={() => {
+                        if (newCustomerName.trim()) setCustomerSearchQuery(newCustomerName);
+                      }}
+                      placeholder="Nama Customer (Wajib) * — ketik untuk cari"
+                      className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-100"
+                      autoComplete="off"
+                    />
+                    {/* Loading indicator */}
+                    {searchingCustomer && (
+                      <div className="absolute right-3 top-2.5">
+                        <div className="w-3.5 h-3.5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    )}
+
+                    {/* Dropdown Autocomplete */}
+                    {searchResults.length > 0 && newCustomerName.trim() && !selectedCustomer && (
+                      <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-blue-200 rounded-xl shadow-xl overflow-hidden max-h-56 overflow-y-auto">
+                        <div className="px-3 py-1.5 bg-blue-50 border-b border-blue-100">
+                          <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">
+                            {searchResults.length} customer ditemukan
+                          </span>
+                        </div>
+                        {searchResults.map((cust: any) => (
+                          <button
+                            key={cust.id}
+                            type="button"
+                            onClick={() => {
+                              handleSelectExistingCustomer(cust);
+                              setCustomerSearchQuery("");
+                              setSearchResults([]);
+                            }}
+                            className="w-full text-left px-3 py-2.5 hover:bg-blue-50 transition border-b border-slate-50 last:border-0"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                                  {cust.name}
+                                  {cust.totalVisits > 0 && (
+                                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 font-bold">
+                                      {cust.totalVisits}x
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-2">
+                                  {cust.phone && <span>📞 {cust.phone}</span>}
+                                  {cust.instagram && <span className="text-pink-500">📷 {cust.instagram}</span>}
+                                  {!cust.phone && !cust.instagram && <span className="italic">Walk-in</span>}
+                                </div>
+                              </div>
+                              {cust.totalSpend > 0 && (
+                                <div className="text-right shrink-0">
+                                  <div className="text-[10px] font-black text-blue-700">
+                                    {formatRupiah(cust.totalSpend)}
+                                  </div>
+                                  <div className="text-[9px] text-slate-400">total belanja</div>
+                                </div>
+                              )}
+                            </div>
+                          </button>
+                        ))}
+                        {/* Opsi: buat baru dengan nama yang diketik */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSearchResults([]);
+                            setCustomerSearchQuery("");
+                          }}
+                          className="w-full text-left px-3 py-2 bg-slate-50 hover:bg-slate-100 transition text-[10px] text-slate-500 font-semibold flex items-center gap-1.5"
+                        >
+                          <UserPlus className="w-3 h-3" />
+                          Buat customer baru "{newCustomerName}"
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="flex gap-2">
                     <input
                       type="text"
@@ -606,7 +707,7 @@ export default function KasirPage() {
                     />
                   </div>
                   <div className="text-[10px] text-slate-400 italic">
-                    * No. HP dan Instagram boleh dikosongkan.
+                    * Ketik nama untuk cari customer lama. No. HP & Instagram boleh dikosongkan.
                   </div>
                 </div>
               )}

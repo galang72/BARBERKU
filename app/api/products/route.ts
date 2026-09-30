@@ -43,6 +43,7 @@ export async function POST(req: NextRequest) {
       unit: body.unit || "pcs",
       isActive: true,
     });
+    invalidateCache("products:");
     return NextResponse.json(created);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
@@ -60,6 +61,7 @@ export async function PUT(req: NextRequest) {
       stock: body.stock !== undefined ? Number(body.stock) : undefined,
       minStock: body.minStock !== undefined ? Number(body.minStock) : undefined,
     });
+    invalidateCache("products:");
     return NextResponse.json(updated);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

@@ -24,6 +24,8 @@ import {
   Crown,
   Building2,
   Shield,
+  Send,
+  Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -62,6 +64,9 @@ export function Sidebar({ isOpenMobile, onCloseMobile }: SidebarProps) {
     { label: "Cash Management", href: "/cash", icon: DollarSign },
   ];
 
+  const isOwner = user?.role === "OWNER" || user?.role === "ADMIN";
+  const isAdmin = user?.role === "ADMIN_TELKOM" || user?.role === "ADMIN_SUTA";
+
   const reportItems = [
     { label: "Laporan Harian", href: "/laporan/harian" },
     { label: "Laporan Bulanan", href: "/laporan/bulanan" },
@@ -69,6 +74,10 @@ export function Sidebar({ isOpenMobile, onCloseMobile }: SidebarProps) {
     { label: "Laporan Barberman", href: "/laporan/barberman" },
     { label: "Laporan Pomade", href: "/laporan/pomade" },
     { label: "Laporan Tonic & Powder", href: "/laporan/tonic-powder" },
+    // Owner: pantau laporan dari semua cabang
+    ...(isOwner ? [{ label: "📊 Laporan Cabang", href: "/laporan/cabang", badge: "Owner" }] : []),
+    // Admin: kirim laporan ke owner
+    ...(isAdmin ? [{ label: "📤 Kirim Laporan ke Owner", href: "/laporan/kirim", badge: "Baru" }] : []),
   ];
 
   const handleLogout = async () => {
@@ -242,13 +251,18 @@ export function Sidebar({ isOpenMobile, onCloseMobile }: SidebarProps) {
                     href={rep.href}
                     onClick={onCloseMobile}
                     className={cn(
-                      "block px-3 py-2 rounded-lg text-xs font-medium transition",
+                      "flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition",
                       isRepActive
                         ? "bg-blue-600/20 text-blue-300 border-l-2 border-blue-400"
                         : "text-slate-400 hover:text-slate-200 hover:bg-[#132247]"
                     )}
                   >
-                    {rep.label}
+                    <span>{rep.label}</span>
+                    {(rep as any).badge && (
+                      <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-blue-500/20 text-blue-300">
+                        {(rep as any).badge}
+                      </span>
+                    )}
                   </Link>
                 );
               })}

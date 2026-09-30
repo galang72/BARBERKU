@@ -44,21 +44,24 @@
       "name": "Arie",
       "nickname": "Bang Arie",
       "phone": "081211112222",
-      "isActive": true
+      "isActive": true,
+      "branch": "Telkom"
     },
     {
       "id": "brb_azis",
       "name": "Azis",
       "nickname": "Bang Azis",
       "phone": "081233334444",
-      "isActive": true
+      "isActive": true,
+      "branch": "Suta"
     },
     {
       "id": "brb_dani",
       "name": "Dani",
       "nickname": "Bang Dani",
       "phone": "081255556666",
-      "isActive": true
+      "isActive": true,
+      "branch": "Telkom"
     }
   ],
   "services": [
@@ -305,6 +308,7 @@
   "cashTransactions": [],
   "expenses": [],
   "transfers": [],
+  "branchReports": [],
   "shopSettings": {
     "id": "default",
     "shopName": "AD BARBERSHOP",

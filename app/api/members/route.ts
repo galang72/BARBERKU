@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getMembers, createMember, extendMember } from "@/lib/db";
+import { getMembers, createMember, extendMember, deleteMember } from "@/lib/db";
+import { invalidateCache } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,7 @@ export async function POST(req: NextRequest) {
       endDate,
     });
 
+    invalidateCache("members:");
     return NextResponse.json(created);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
@@ -47,7 +49,22 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "ID dan tambahan hari wajib diisi" }, { status: 400 });
     }
     const updated = await extendMember(id, Number(additionalDays));
+    invalidateCache("members:");
     return NextResponse.json(updated);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+    if (!id) return NextResponse.json({ error: "ID member wajib diisi" }, { status: 400 });
+
+    await deleteMember(id);
+    invalidateCache("members:");
+    return NextResponse.json({ success: true, message: "Member berhasil dihapus" });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
