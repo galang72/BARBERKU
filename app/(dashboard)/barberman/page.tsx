@@ -204,9 +204,9 @@ export default function BarbermanPage() {
                     </div>
                   </div>
 
-                  <Badge variant={b.isActive ? "emerald" : "rose"}>
-                    {b.isActive ? "Aktif" : "Nonaktif"}
-                  </Badge>
+                  <Badge variant={b.isActive ? "green" : "red"}>
+                  {b.isActive ? "Aktif" : "Nonaktif"}
+                   </Badge>
                 </div>
 
                 {/* STATS ROW (BULAN INI) */}
