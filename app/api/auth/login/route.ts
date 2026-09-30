@@ -27,8 +27,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Password salah. Masukkan password default: admin123" }, { status: 401 });
     }
 
-    const role = (user.role as any) || (user.username === "admin_telkom" ? "ADMIN_TELKOM" : user.username === "admin_suta" ? "ADMIN_SUTA" : "OWNER");
-    const branch = user.branch || (role === "ADMIN_TELKOM" ? "Telkom" : role === "ADMIN_SUTA" ? "Suta" : "All");
+    const userAny = user as any;
+    const role = userAny.role || (user.username === "admin_telkom" ? "ADMIN_TELKOM" : user.username === "admin_suta" ? "ADMIN_SUTA" : "OWNER");
+    const branch = userAny.branch || (role === "ADMIN_TELKOM" ? "Telkom" : role === "ADMIN_SUTA" ? "Suta" : "All");
 
     const sessionPayload = {
       id: user.id,
