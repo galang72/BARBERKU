@@ -1342,7 +1342,7 @@ export async function createProductTransfer(input: CreateTransferInput) {
   memoryDB.stockMovements.push(movementIn);
 
   // Update transferRecord dengan info stok terkini
-  transferRecord.stockAfterTransfer = product.stock;
+  (transferRecord as any).stockAfterTransfer = product.stock;
 
   saveLocalDB();
   return transferRecord;
