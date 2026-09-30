@@ -1,0 +1,209 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2563eb;
+}
+
+/* =======================================================
+   PRINT STYLESHEET (LAPORAN RESMI A4 & STRUK THERMAL)
+   ======================================================= */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm;
+  }
+
+  /* 1. Sembunyikan elemen navigasi web, sidebar, header, dan tombol aksi */
+  aside,
+  header,
+  .no-print,
+  button,
+  input,
+  select {
+    display: none !important;
+  }
+
+  /* 2. Global Reset: Paksa Semua Kontainer & Layout Menjadi Putih Bersih */
+  *,
+  *::before,
+  *::after {
+    color: #000000 !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+
+  html,
+  body,
+  body > div,
+  .min-h-screen,
+  main,
+  div,
+  section,
+  article,
+  [class*="bg-"] {
+    background-color: #ffffff !important;
+    background-image: none !important;
+    color: #000000 !important;
+  }
+
+  body {
+    font-size: 9.5pt;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hilangkan padding kiri fixed sidebar pada desktop */
+  .md\:pl-64 {
+    padding-left: 0 !important;
+  }
+
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  /* 3. Gaya Dokumen Laporan Resmi (A4) */
+  .report-printable {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .report-printable .card,
+  .report-printable [class*="rounded-xl"] {
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+  }
+
+  .report-printable .card-stat {
+    background-color: #f8fafc !important;
+    border: 1px solid #94a3b8 !important;
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Judul Seksi Laporan Formal */
+  .report-printable .section-title {
+    color: #0f172a !important;
+    font-weight: 800 !important;
+    font-size: 10.5pt !important;
+    border-bottom: 2px solid #334155 !important;
+    padding-bottom: 4px !important;
+    margin-top: 14px !important;
+    margin-bottom: 8px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+  }
+
+  /* 4. Tabel Laporan Hitam Putih Kontras Tinggi */
+  .report-printable table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-top: 6px !important;
+    margin-bottom: 8px !important;
+    border: 1px solid #475569 !important;
+    background-color: #ffffff !important;
+  }
+
+  .report-printable thead tr,
+  .report-printable th {
+    background-color: #f1f5f9 !important;
+    color: #000000 !important;
+    border: 1px solid #475569 !important;
+    padding: 5px 8px !important;
+    font-weight: 700 !important;
+    font-size: 8.5pt !important;
+    text-align: left !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .report-printable tbody tr {
+    background-color: #ffffff !important;
+  }
+
+  .report-printable tbody tr:nth-child(even) {
+    background-color: #f8fafc !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .report-printable td {
+    border: 1px solid #cbd5e1 !important;
+    padding: 5px 8px !important;
+    font-size: 8.5pt !important;
+    color: #000000 !important;
+  }
+
+  .report-printable tfoot tr,
+  .report-printable tfoot td {
+    background-color: #f1f5f9 !important;
+    color: #000000 !important;
+    font-weight: 800 !important;
+    border: 1.5px solid #334155 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* 5. Khusus Struk Thermal Kasir 58mm/80mm */
+  body:has(.printable-thermal) * {
+    visibility: hidden;
+  }
+  body:has(.printable-thermal) .printable-thermal,
+  body:has(.printable-thermal) .printable-thermal * {
+    visibility: visible !important;
+  }
+  .printable-thermal {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 4mm !important;
+    background: white !important;
+    color: black !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+}

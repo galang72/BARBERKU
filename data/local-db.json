@@ -1,0 +1,317 @@
+{
+  "initialized": true,
+  "users": [
+    {
+      "id": "usr_admin01",
+      "username": "admin",
+      "email": "admin@adbarbershop.com",
+      "passwordHash": "$2a$10$B7.IaH54O6JYYr0tAIvZ0ujLqC.1hhYdwHZe5fFd.WAZzvgdbSLIS",
+      "name": "Owner AD Barbershop",
+      "role": "OWNER",
+      "branch": "All"
+    },
+    {
+      "id": "usr_owner",
+      "username": "owner",
+      "email": "owner@adbarbershop.com",
+      "passwordHash": "$2a$10$B7.IaH54O6JYYr0tAIvZ0ujLqC.1hhYdwHZe5fFd.WAZzvgdbSLIS",
+      "name": "Owner AD Barbershop",
+      "role": "OWNER",
+      "branch": "All"
+    },
+    {
+      "id": "usr_admin_telkom",
+      "username": "admin_telkom",
+      "email": "telkom@adbarbershop.com",
+      "passwordHash": "$2a$10$B7.IaH54O6JYYr0tAIvZ0ujLqC.1hhYdwHZe5fFd.WAZzvgdbSLIS",
+      "name": "Admin Telkom",
+      "role": "ADMIN_TELKOM",
+      "branch": "Telkom"
+    },
+    {
+      "id": "usr_admin_suta",
+      "username": "admin_suta",
+      "email": "suta@adbarbershop.com",
+      "passwordHash": "$2a$10$B7.IaH54O6JYYr0tAIvZ0ujLqC.1hhYdwHZe5fFd.WAZzvgdbSLIS",
+      "name": "Admin Suta",
+      "role": "ADMIN_SUTA",
+      "branch": "Suta"
+    }
+  ],
+  "barbermen": [
+    {
+      "id": "brb_arie",
+      "name": "Arie",
+      "nickname": "Bang Arie",
+      "phone": "081211112222",
+      "isActive": true
+    },
+    {
+      "id": "brb_azis",
+      "name": "Azis",
+      "nickname": "Bang Azis",
+      "phone": "081233334444",
+      "isActive": true
+    },
+    {
+      "id": "brb_dani",
+      "name": "Dani",
+      "nickname": "Bang Dani",
+      "phone": "081255556666",
+      "isActive": true
+    }
+  ],
+  "services": [
+    {
+      "id": "srv_haircut_classic",
+      "name": "Special Service",
+      "category": "HAIRCUT",
+      "price": 80000,
+      "durationMinutes": 60,
+      "isActive": true
+    },
+    {
+      "id": "srv_haircut_premium",
+      "name": "Creambath",
+      "category": "TREATMENT",
+      "price": 50000,
+      "durationMinutes": 30,
+      "isActive": true
+    },
+    {
+      "id": "srv_kids_haircut",
+      "name": "Kids Haircut",
+      "category": "HAIRCUT",
+      "price": 60000,
+      "durationMinutes": 50,
+      "isActive": true
+    },
+    {
+      "id": "srv_beard_trim",
+      "name": "Ear Candle + Head Massage",
+      "category": "TREATMENT",
+      "price": 30000,
+      "durationMinutes": 30,
+      "isActive": true
+    },
+    {
+      "id": "srv_hair_spa",
+      "name": "Black Mask",
+      "category": "TREATMENT",
+      "price": 25000,
+      "durationMinutes": 15,
+      "isActive": true
+    },
+    {
+      "id": "srv_hair_coloring",
+      "name": "Hair Coloring (Basic Black/Brown)",
+      "category": "COLORING",
+      "price": 450000,
+      "durationMinutes": 60,
+      "isActive": true
+    },
+    {
+      "id": "srv_1790441414651",
+      "isActive": true,
+      "createdAt": "2026-09-26T16:50:14.651Z",
+      "name": "Hair Coloring (Basic Black/Brown)",
+      "category": "COLORING",
+      "price": 100000,
+      "durationMinutes": 60
+    },
+    {
+      "id": "srv_1790441499863",
+      "isActive": true,
+      "createdAt": "2026-09-26T16:51:39.863Z",
+      "name": "Perming",
+      "category": "SHAVE",
+      "price": 450000,
+      "durationMinutes": 60
+    },
+    {
+      "id": "srv_1790441521807",
+      "isActive": true,
+      "createdAt": "2026-09-26T16:52:01.807Z",
+      "name": "Perming",
+      "category": "SHAVE",
+      "price": 100000,
+      "durationMinutes": 60
+    },
+    {
+      "id": "srv_1790441579756",
+      "isActive": true,
+      "createdAt": "2026-09-26T16:52:59.756Z",
+      "name": "Beard Trim",
+      "category": "SHAVE",
+      "price": 15000,
+      "durationMinutes": 10
+    }
+  ],
+  "categories": [
+    {
+      "id": "cat_pomade",
+      "name": "Pomade",
+      "slug": "pomade",
+      "description": "Minyak rambut styling pria"
+    },
+    {
+      "id": "cat_tonic",
+      "name": "Tonic",
+      "slug": "tonic",
+      "description": "Tonik penyegar akar rambut"
+    },
+    {
+      "id": "cat_powder",
+      "name": "Powder",
+      "slug": "powder",
+      "description": "Styling powder bervolume"
+    },
+    {
+      "id": "cat_shampoo",
+      "name": "Shampoo",
+      "slug": "shampoo",
+      "description": "Shampoo perawatan kulit kepala"
+    },
+    {
+      "id": "cat_hair_clay",
+      "name": "Hair Clay",
+      "slug": "hair-clay",
+      "description": "Clay styling matte"
+    },
+    {
+      "id": "cat_hair_spray",
+      "name": "Hair Spray",
+      "slug": "hair-spray",
+      "description": "Spray pengunci rambut"
+    }
+  ],
+  "products": [
+    {
+      "id": "prd_pomade_01",
+      "categoryId": "cat_pomade",
+      "sku": "POM-SUV-01",
+      "name": "Suavecito Matte Pomade 4oz",
+      "costPrice": 85000,
+      "sellingPrice": 130000,
+      "stock": 24,
+      "minStock": 5,
+      "unit": "pot",
+      "isActive": true
+    },
+    {
+      "id": "prd_pomade_02",
+      "categoryId": "cat_pomade",
+      "sku": "POM-CHF-02",
+      "name": "Chief Solid Black Pomade 4.2oz",
+      "costPrice": 90000,
+      "sellingPrice": 145000,
+      "stock": 18,
+      "minStock": 5,
+      "unit": "pot",
+      "isActive": true
+    },
+    {
+      "id": "prd_pomade_03",
+      "categoryId": "cat_pomade",
+      "sku": "POM-MRY-03",
+      "name": "Murrays Superior Pomade 3oz",
+      "costPrice": 55000,
+      "sellingPrice": 85000,
+      "stock": 12,
+      "minStock": 4,
+      "unit": "pot",
+      "isActive": true
+    },
+    {
+      "id": "prd_pomade_04",
+      "categoryId": "cat_pomade",
+      "sku": "POM-GTS-04",
+      "name": "Gatsby Styling Pomade Perfect Hold",
+      "costPrice": 25000,
+      "sellingPrice": 40000,
+      "stock": 30,
+      "minStock": 8,
+      "unit": "pot",
+      "isActive": true
+    },
+    {
+      "id": "prd_tonic_01",
+      "categoryId": "cat_tonic",
+      "sku": "TON-HRB-01",
+      "name": "Hair Tonic Herbal Ginseng 200ml",
+      "costPrice": 35000,
+      "sellingPrice": 60000,
+      "stock": 16,
+      "minStock": 5,
+      "unit": "botol",
+      "isActive": true
+    },
+    {
+      "id": "prd_tonic_02",
+      "categoryId": "cat_tonic",
+      "sku": "TON-MNT-02",
+      "name": "Menthol Cool Refreshing Hair Tonic 250ml",
+      "costPrice": 30000,
+      "sellingPrice": 55000,
+      "stock": 20,
+      "minStock": 5,
+      "unit": "botol",
+      "isActive": true
+    },
+    {
+      "id": "prd_powder_01",
+      "categoryId": "cat_powder",
+      "sku": "PWD-DST-01",
+      "name": "Dust It Texture Hair Styling Powder 10g",
+      "costPrice": 45000,
+      "sellingPrice": 80000,
+      "stock": 22,
+      "minStock": 5,
+      "unit": "botol",
+      "isActive": true
+    },
+    {
+      "id": "prd_powder_02",
+      "categoryId": "cat_powder",
+      "sku": "PWD-MAT-02",
+      "name": "Matte Volume Powder Hold Extra 15g",
+      "costPrice": 40000,
+      "sellingPrice": 75000,
+      "stock": 14,
+      "minStock": 5,
+      "unit": "botol",
+      "isActive": true
+    },
+    {
+      "id": "prd_shampoo_01",
+      "categoryId": "cat_shampoo",
+      "sku": "SHM-DAN-01",
+      "name": "Anti-Dandruff Barbershop Shampoo 300ml",
+      "costPrice": 35000,
+      "sellingPrice": 65000,
+      "stock": 13,
+      "minStock": 5,
+      "unit": "botol",
+      "isActive": true
+    }
+  ],
+  "stockMovements": [],
+  "customers": [],
+  "members": [],
+  "bookings": [],
+  "transactions": [],
+  "transactionItems": [],
+  "payments": [],
+  "cashTransactions": [],
+  "expenses": [],
+  "transfers": [],
+  "shopSettings": {
+    "id": "default",
+    "shopName": "AD BARBERSHOP",
+    "address": "Jl. Telekomunikasi No.234, Lengkong, Kec. Bojongsoang, Kabupaten Bandung, Jawa Barat 40287",
+    "phone": "0895-3267-09996",
+    "receiptHeader": "Classic Haircut & Professional Grooming",
+    "receiptFooter": "Terima Kasih Atas Kunjungan Anda! Tampil Lebih Percaya Diri Bersama AD Barbershop.",
+    "initialCashFloat": 0
+  }
+}

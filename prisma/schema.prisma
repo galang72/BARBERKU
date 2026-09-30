@@ -1,0 +1,325 @@
+// AD BARBERSHOP - Prisma Schema
+// Sesuai arsitektur Supabase PostgreSQL untuk Vercel Serverless
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  ARRIVED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentMethod {
+  CASH
+  QRIS
+  TRANSFER
+  DEBIT
+  KREDIT
+  E_WALLET
+}
+
+enum PaymentStatus {
+  PAID
+  PENDING
+  REFUNDED
+}
+
+enum ItemType {
+  SERVICE
+  PRODUCT
+}
+
+enum CashType {
+  CASH_IN
+  CASH_OUT
+}
+
+enum StockMovementType {
+  IN
+  OUT
+  ADJUSTMENT
+}
+
+enum MemberStatus {
+  ACTIVE
+  EXPIRED
+  INACTIVE
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  role         Role     @default(ADMIN)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Barberman {
+  id           String        @id @default(cuid())
+  name         String
+  nickname     String?
+  phone        String?
+  photoUrl     String?       @map("photo_url")
+  isActive     Boolean       @default(true) @map("is_active")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  bookings     Booking[]
+  transactions Transaction[]
+  customers    Customer[]    @relation("FavoriteBarberman")
+
+  @@map("barbermen")
+}
+
+model Customer {
+  id                  String        @id @default(cuid())
+  name                String
+  phone               String?
+  instagram           String?
+  address             String?
+  notes               String?
+  totalVisits         Int           @default(0) @map("total_visits")
+  totalSpend          Float         @default(0) @map("total_spend")
+  lastVisitAt         DateTime?     @map("last_visit_at")
+  favoriteBarbermanId String?       @map("favorite_barberman_id")
+  favoriteBarberman   Barberman?    @relation("FavoriteBarberman", fields: [favoriteBarbermanId], references: [id], onDelete: SetNull)
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
+  bookings            Booking[]
+  transactions        Transaction[]
+  members             Member[]
+
+  @@map("customers")
+}
+
+model Member {
+  id                 String              @id @default(cuid())
+  customerId         String?             @map("customer_id")
+  customer           Customer?           @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  memberCode         String              @unique @map("member_code")
+  name               String
+  phone              String?
+  packageName        String              @map("package_name")
+  startDate          DateTime            @default(now()) @map("start_date")
+  endDate            DateTime            @map("end_date")
+  status             MemberStatus        @default(ACTIVE)
+  totalVisits        Int                 @default(0) @map("total_visits")
+  totalSpend         Float               @default(0) @map("total_spend")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+  memberTransactions MemberTransaction[]
+
+  @@map("members")
+}
+
+model Service {
+  id               String            @id @default(cuid())
+  name             String
+  category         String            @default("HAIRCUT")
+  price            Float
+  durationMinutes  Int               @default(30) @map("duration_minutes")
+  isActive         Boolean           @default(true) @map("is_active")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  bookings         Booking[]
+  transactionItems TransactionItem[]
+
+  @@map("services")
+}
+
+model ProductCategory {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  products    Product[]
+
+  @@map("product_categories")
+}
+
+model Product {
+  id               String            @id @default(cuid())
+  categoryId       String?           @map("category_id")
+  category         ProductCategory?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  sku              String            @unique
+  name             String
+  costPrice        Float             @default(0) @map("cost_price")
+  sellingPrice     Float             @map("selling_price")
+  stock            Int               @default(0)
+  minStock         Int               @default(5) @map("min_stock")
+  supplier         String?
+  unit             String            @default("pcs")
+  isActive         Boolean           @default(true) @map("is_active")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  stockMovements   StockMovement[]
+  transactionItems TransactionItem[]
+
+  @@map("products")
+}
+
+model StockMovement {
+  id            String            @id @default(cuid())
+  productId     String            @map("product_id")
+  product       Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  type          StockMovementType
+  quantity      Int
+  previousStock Int               @map("previous_stock")
+  currentStock  Int               @map("current_stock")
+  reason        String
+  notes         String?
+  createdAt     DateTime          @default(now()) @map("created_at")
+
+  @@map("stock_movements")
+}
+
+model Booking {
+  id            String        @id @default(cuid())
+  customerId    String?       @map("customer_id")
+  customer      Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerName  String        @map("customer_name")
+  customerPhone String?       @map("customer_phone")
+  barbermanId   String        @map("barberman_id")
+  barberman     Barberman     @relation(fields: [barbermanId], references: [id])
+  serviceId     String        @map("service_id")
+  service       Service       @relation(fields: [serviceId], references: [id])
+  bookingDate   DateTime      @map("booking_date")
+  bookingTime   String        @map("booking_time")
+  notes         String?
+  status        BookingStatus @default(PENDING)
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  @@map("bookings")
+}
+
+model Transaction {
+  id                 String              @id @default(cuid())
+  invoiceNumber      String              @unique @map("invoice_number")
+  customerId         String?             @map("customer_id")
+  customer           Customer?           @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerName       String              @map("customer_name")
+  customerPhone      String?             @map("customer_phone")
+  customerInstagram  String?             @map("customer_instagram")
+  barbermanId        String              @map("barberman_id")
+  barberman          Barberman           @relation(fields: [barbermanId], references: [id])
+  subtotal           Float               @default(0)
+  discount           Float               @default(0)
+  grandTotal         Float               @map("grand_total")
+  paymentMethod      PaymentMethod       @default(CASH) @map("payment_method")
+  paymentStatus      PaymentStatus       @default(PAID) @map("payment_status")
+  notes              String?
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+  items              TransactionItem[]
+  payments           Payment[]
+  cashTransactions   CashTransaction[]
+  memberTransactions MemberTransaction[]
+
+  @@map("transactions")
+}
+
+model TransactionItem {
+  id            String      @id @default(cuid())
+  transactionId String      @map("transaction_id")
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  itemType      ItemType    @map("item_type")
+  serviceId     String?     @map("service_id")
+  service       Service?    @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  productId     String?     @map("product_id")
+  product       Product?    @relation(fields: [productId], references: [id], onDelete: SetNull)
+  name          String
+  price         Float
+  costPrice     Float       @default(0) @map("cost_price")
+  quantity      Int         @default(1)
+  subtotal      Float
+
+  @@map("transaction_items")
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  transactionId String        @map("transaction_id")
+  transaction   Transaction   @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  paymentMethod PaymentMethod @map("payment_method")
+  amountPaid    Float         @map("amount_paid")
+  changeAmount  Float         @default(0) @map("change_amount")
+  paymentRef    String?       @map("payment_ref")
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  @@map("payments")
+}
+
+model CashTransaction {
+  id            String       @id @default(cuid())
+  type          CashType
+  category      String
+  amount        Float
+  description   String
+  source        String       @default("MANUAL")
+  transactionId String?      @map("transaction_id")
+  transaction   Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+  createdAt     DateTime     @default(now()) @map("created_at")
+
+  @@map("cash_transactions")
+}
+
+model Expense {
+  id            String        @id @default(cuid())
+  category      String
+  amount        Float
+  description   String
+  expenseDate   DateTime      @default(now()) @map("expense_date")
+  paymentMethod PaymentMethod @default(CASH) @map("payment_method")
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  @@map("expenses")
+}
+
+model MemberTransaction {
+  id            String      @id @default(cuid())
+  memberId      String      @map("member_id")
+  member        Member      @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  transactionId String      @map("transaction_id")
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  pointsEarned  Int         @default(0) @map("points_earned")
+  notes         String?
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  @@map("member_transactions")
+}
+
+model ShopSetting {
+  id               String   @id @default("default")
+  shopName         String   @default("AD BARBERSHOP") @map("shop_name")
+  address          String   @default("Jl. Barbershop No. 1, Jakarta")
+  phone            String   @default("0895-3267-09996")
+  receiptHeader    String?  @default("Grooming & Classic Haircut") @map("receipt_header")
+  receiptFooter    String?  @default("Terima Kasih Atas Kunjungan Anda! Tampil Lebih Percaya Diri Bersama AD Barbershop.") @map("receipt_footer")
+  initialCashFloat Float    @default(100000) @map("initial_cash_float")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("shop_settings")
+}
