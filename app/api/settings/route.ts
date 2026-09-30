@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getShopSettings, updateShopSettings, resetDatabase } from "@/lib/db";
+import { withCache, invalidateCache, TTL } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const settings = await getShopSettings();
-    return NextResponse.json(settings);
+    const settings = await withCache("settings:shop", () => getShopSettings(), TTL.SETTINGS);
+    return NextResponse.json(settings, {
+      headers: { "Cache-Control": `s-maxage=${TTL.SETTINGS}, stale-while-revalidate=30` },
+    });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

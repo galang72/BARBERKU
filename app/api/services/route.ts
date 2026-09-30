@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServices, createService, updateService, deleteService } from "@/lib/db";
+import { withCache, invalidateCache, TTL } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -7,8 +8,11 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const includeInactive = searchParams.get("all") === "true";
-    const data = await getServices(includeInactive);
-    return NextResponse.json(data);
+    const cacheKey = `services:${includeInactive}`;
+    const data = await withCache(cacheKey, () => getServices(includeInactive), TTL.SERVICES);
+    return NextResponse.json(data, {
+      headers: { "Cache-Control": `s-maxage=${TTL.SERVICES}, stale-while-revalidate=15` },
+    });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

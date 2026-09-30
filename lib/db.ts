@@ -568,7 +568,7 @@ let lastDbError: string | null = null;
 
 export async function isDatabaseConnected(): Promise<boolean> {
   const now = Date.now();
-  if (dbStatus !== "unknown" && now - lastCheckTime < 15000) {
+  if (dbStatus !== "unknown" && now - lastCheckTime < 60000) {
     return dbStatus === "connected";
   }
 

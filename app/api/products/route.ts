@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getProducts, getProductCategories, createProduct, updateProduct } from "@/lib/db";
+import { withCache, invalidateCache, TTL } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -9,10 +10,16 @@ export async function GET(req: NextRequest) {
     const categoryId = searchParams.get("categoryId") || undefined;
     const includeCategories = searchParams.get("includeCategories") === "true";
 
-    const products = await getProducts(categoryId);
-    const categories = includeCategories ? await getProductCategories() : undefined;
+    const cacheKey = `products:${categoryId}:${includeCategories}`;
+    const result = await withCache(cacheKey, async () => {
+      const products = await getProducts(categoryId);
+      const categories = includeCategories ? await getProductCategories() : undefined;
+      return { products, categories };
+    }, TTL.PRODUCTS);
 
-    return NextResponse.json({ products, categories });
+    return NextResponse.json(result, {
+      headers: { "Cache-Control": `s-maxage=${TTL.PRODUCTS}, stale-while-revalidate=10` },
+    });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

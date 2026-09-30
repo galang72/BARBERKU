@@ -12,6 +12,9 @@ datasource db {
 
 enum Role {
   ADMIN
+  OWNER
+  ADMIN_TELKOM
+  ADMIN_SUTA
 }
 
 enum BookingStatus {
@@ -68,6 +71,7 @@ model User {
   passwordHash String   @map("password_hash")
   name         String
   role         Role     @default(ADMIN)
+  branch       String   @default("All")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
